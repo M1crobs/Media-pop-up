@@ -1,0 +1,15 @@
+{
+  "Metallica": {
+    "For whom the bell tolls": "It's METALLICA, Micah!",
+    "No Remorse": "Doom OST kicks in-... wait",
+    "Fight Fire With Fire": "We all shall LARP"
+  },
+
+  "Megadeth": {
+    "Symphony of destruction": "You try to take his BAAAAALLLSS; Mozart kicks in"
+  },
+
+  "default": {
+    "default": "==================================="
+  }
+}
