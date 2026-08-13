@@ -23,12 +23,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Add source to this project's executable.
-add_executable (CMakeApp WIN32 "main.cpp" "main.h" 
-                        "controller.h" "controller.cpp" 
-                        "mainwindow.h" "mainwindow.cpp" 
-                        "logic.h" "logic.cpp"
-                        "mediaplayerworker.h" "mediaplayerworker.cpp"
-                        "mainwindow.qrc")
+add_executable (CMakeApp WIN32 "src/main.cpp" "src/main.h" 
+                        "src/controller.h" "src/controller.cpp" 
+                        "src/mainwindow.h" "src/mainwindow.cpp" 
+                        "src/logic.h" "src/logic.cpp"
+                        "src/mediaplayerworker.h" "src/mediaplayerworker.cpp"
+                        "src/mainwindow.qrc")
 
 find_package(cppwinrt CONFIG REQUIRED)
 target_link_libraries(CMakeApp PRIVATE Microsoft::CppWinRT WindowsApp.lib)
