@@ -1,7 +1,5 @@
 QWidget#centralWgt {
     background-color: #54bef5;
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
 }
 
 QWidget#backgroundWgt {

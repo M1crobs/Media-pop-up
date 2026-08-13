@@ -23,9 +23,9 @@
    <widget class="QWidget" name="backgroundWgt" native="true">
     <property name="geometry">
      <rect>
-      <x>5</x>
+      <x>4</x>
       <y>0</y>
-      <width>321</width>
+      <width>322</width>
       <height>100</height>
      </rect>
     </property>
