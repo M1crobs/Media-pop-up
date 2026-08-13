@@ -1,5 +1,5 @@
 QWidget#centralWgt {
-    background-color: #2234b1;
+    background-color: #54bef5;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
 }
@@ -11,7 +11,7 @@ QWidget#backgroundWgt {
 
 QLabel#titleLbl {
     font: 500 22px "Mukta Malar";
-    color: #f2f2f2;
+    color: #4398c4;
 }
 
 QLabel#artistLbl {
@@ -22,6 +22,6 @@ QLabel#artistLbl {
 QLabel#commentLbl {
     font: 400 18px "Mukta Malar";
     border: 0px;
-    border-top: 3px solid #2234b1;
+    border-top: 3px solid #54bef5;
     color: #9c9c9c;
 }
