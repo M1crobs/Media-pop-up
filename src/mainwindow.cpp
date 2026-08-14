@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "mediaplayerworker.h"
-#include <QTimer>
 #include <QGraphicsOpacityEffect>
 #include <spdlog/spdlog.h>
 
@@ -9,19 +8,23 @@ int windowWidth = 320;
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-	spdlog::set_level(spdlog::level::debug);
-
 	ui.setupUi(this);
+
+	// move window off screen
 	this->move(1920, 200);
+	// move background (black rectangle) off the main window
 	ui.backgroundWgt->move(windowWidth, ui.backgroundWgt->y());
+
 	initializeAnimations();
 
 	// Setup worker and move it to a different thread
+	// The worker exists to call WinRT functions in a different thread
+	// So they will not stop the main one
 	m_worker = new MediaPlayerWorker();
 	m_worker->moveToThread(&m_workerThread);
 	m_workerThread.start();
 
-	// Setup timer to check data every 300ms
+	// Setup timer to check media data every 300ms
 	auto extractMediaPropsTimer = new QTimer(this);
 	connect(extractMediaPropsTimer, &QTimer::timeout, m_worker, &MediaPlayerWorker::extractMediaProperties);
 	extractMediaPropsTimer->start(300);
@@ -37,8 +40,9 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::setTitleLblText(const QString& text) {
-	if (text.length() > 27) {
-		QString textCut = text.left(27);
+	// truncate if the number of characters exceeds certain number
+	if (text.length() > 26) {
+		QString textCut = text.left(26);
 		textCut.append("...");
 		ui.titleLbl->setText(textCut);
 	}
@@ -51,6 +55,7 @@ void MainWindow::setTitleLblText(const QString& text) {
 }
 
 void MainWindow::setArtistLblText(const QString& text) {
+	// truncate if the number of characters exceeds certain number
 	if (text.length() > 30) {
 		QString textCut = text.left(30);
 		textCut.append("...");
@@ -145,14 +150,14 @@ void MainWindow::onMediaInfoExtracted(QString appID, QString title, QString arti
 
 void MainWindow::initializeAnimations() {
 	// Setup flyIn animations
-	// 1. Window animation (colored rect)
+	// 1. Window animation (colored rectangle)
 	m_windowFlyIn = new QPropertyAnimation(this, "pos");
 	m_windowFlyIn->setStartValue(QPoint(1920, this->y()));
 	m_windowFlyIn->setEndValue(QPoint(1920-windowWidth, this->y()));
 	m_windowFlyIn->setEasingCurve(QEasingCurve::OutCubic);
 	m_windowFlyIn->setDuration(300);
 
-	// 2. Background animation (black rect)
+	// 2. Background animation (black rectangle)
 	m_backgroundFlyIn = new QPropertyAnimation(ui.backgroundWgt, "pos");
 	m_backgroundFlyIn->setStartValue(QPoint(windowWidth, ui.backgroundWgt->y()));
 	m_backgroundFlyIn->setEndValue(QPoint(6, ui.backgroundWgt->y()));
@@ -204,14 +209,14 @@ void MainWindow::initializeAnimations() {
 	// ----------------------------------------
 
 	// Setup flyOut animations
-	// 1. Background animation (black rect)
+	// 1. Background animation (black rectangle)
 	m_backgroundFlyOut = new QPropertyAnimation(ui.backgroundWgt, "pos");
 	m_backgroundFlyOut->setStartValue(QPoint(6, ui.backgroundWgt->y()));
 	m_backgroundFlyOut->setEndValue(QPoint(windowWidth, ui.backgroundWgt->y()));
 	m_backgroundFlyOut->setEasingCurve(QEasingCurve::InCubic);
 	m_backgroundFlyOut->setDuration(300);
 
-	// 2. Window animation (colored rect)
+	// 2. Window animation (colored rectangle)
 	m_windowFlyOut = new QPropertyAnimation(this, "pos");
 	m_windowFlyOut->setStartValue(QPoint(1920-windowWidth, this->y()));
 	m_windowFlyOut->setEndValue(QPoint(1920, this->y()));

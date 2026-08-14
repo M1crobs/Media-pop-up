@@ -5,8 +5,6 @@
 #include <cctype>
 #include <fstream>
 #include <vector>
-#include <chrono>
-
 
 Logic::Logic()
 {
@@ -31,9 +29,6 @@ std::string Logic::chooseComment(std::string title, std::string artist) {
 	m_currentTrack = { title, artist }; // ..and then rewrite the current one
 	m_trackList.push_back(m_currentTrack);
 
-    //TODO --------- Check both prev and current tracks (high priority) ---------
-
-    /// --------- Check only current tracks (low priority) ---------
     // iterate through every artist in json
     for (auto it = m_commentList.begin(); it != m_commentList.end(); it++) {
         auto trackList = it.value();
@@ -90,7 +85,7 @@ std::string Logic::chooseComment(std::string title, std::string artist) {
         }
     }
 
-    /// Base case (no matches found)
+    // Base case (no matches found)
     return m_commentList["default"]["default"];
 }
 

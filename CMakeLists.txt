@@ -45,5 +45,3 @@ target_link_libraries(CMakeApp PRIVATE Qt6::Core Qt6::Widgets Qt6::Gui)
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CMakeApp PROPERTY CXX_STANDARD 20)
 endif()
-
-# TODO: Add tests and install targets if needed.

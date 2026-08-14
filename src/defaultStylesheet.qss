@@ -1,0 +1,25 @@
+QWidget#centralWgt {
+    background-color: floralwhite;
+}
+
+QWidget#backgroundWgt {
+    background-color: black;
+    border: 0px;
+}
+
+QLabel#titleLbl {
+    font: 500 22px "Mukta Malar";
+    color: floralwhite;
+}
+
+QLabel#artistLbl {
+    font: 400 18px "Mukta Malar";
+    color: #9c9c9c;
+}
+
+QLabel#commentLbl {
+    font: 400 18px "Mukta Malar";
+    border: 0px;
+    border-top: 3px solid floralwhite;
+    color: #9c9c9c;
+}
