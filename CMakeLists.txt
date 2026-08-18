@@ -28,7 +28,7 @@ add_executable (MediaPopUp WIN32 "src/main.cpp" "src/main.h"
                         "src/mainwindow.h" "src/mainwindow.cpp" 
                         "src/logic.h" "src/logic.cpp"
                         "src/mediaplayerworker.h" "src/mediaplayerworker.cpp"
-                        "src/mainwindow.qrc")
+                        "src/mainwindow.qrc" "src/resources.rc")
 
 find_package(cppwinrt CONFIG REQUIRED)
 target_link_libraries(MediaPopUp PRIVATE Microsoft::CppWinRT WindowsApp.lib)

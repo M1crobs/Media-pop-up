@@ -112,19 +112,27 @@ void MainWindow::onMediaInfoExtracted(QString appID, QString title, QString arti
 
 void MainWindow::initializeTrayIcon() {
 	m_trayMenu = new QMenu(this);
-	m_trayMenu->setObjectName("trayMenu");
+	m_trayMenu->setObjectName("trayMenu"); // for applying style sheet
+
+	// add actions to the menu
 	m_editQssAction = m_trayMenu->addAction("Edit QSS", []() {
 		QDesktopServices::openUrl(QUrl::fromLocalFile("stylesheet.qss"));
 		});
 	m_updateQssAction = m_trayMenu->addAction("Update QSS", [this]() {
 		updateStyleSheet();
 		});
+	m_editCommentListAction = m_trayMenu->addAction("Edit Comments", []() {
+		QDesktopServices::openUrl(QUrl::fromLocalFile("commentlist.json"));
+		});
+
+	// separate 'quit' action
 	m_trayMenu->addSeparator();
 	m_quitAction = m_trayMenu->addAction("Quit", qApp, &QApplication::quit);
 	
+	// setup system tray icon
 	m_trayIcon = new QSystemTrayIcon(this);
-	m_trayIcon->setIcon(QIcon(":/icons/icons/appIcon.png"));
 	m_trayIcon->setContextMenu(m_trayMenu);
+	m_trayIcon->setIcon(QIcon(":/icons/icons/appIcon.png"));
 	m_trayIcon->setToolTip("Media Pop-up");
 
 	connect(m_trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {

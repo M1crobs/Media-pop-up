@@ -37,6 +37,7 @@ private:
 	QAction* m_quitAction;
 	QAction* m_editQssAction;
 	QAction* m_updateQssAction;
+	QAction* m_editCommentListAction;
 
 	QPropertyAnimation* m_windowFlyIn;
 	QPropertyAnimation* m_backgroundFlyIn;
