@@ -1,14 +1,19 @@
 #include "mainwindow.h"
 #include "mediaplayerworker.h"
 #include <QGraphicsOpacityEffect>
+#include <QDesktopServices>
+#include <QFile>
 #include <spdlog/spdlog.h>
+#include <format>
 
+// the width of the main window
 int windowWidth = 320;
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	initializeTrayIcon();
 
 	// move window off screen
 	this->move(1920, 200);
@@ -16,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
 	ui.backgroundWgt->move(windowWidth, ui.backgroundWgt->y());
 
 	initializeAnimations();
+
+	// setup animatin timer
+	m_singleShotTimer.setSingleShot(true);
+	connect(&m_singleShotTimer, &QTimer::timeout, this, [this]() { m_flyOut->start(); });
 
 	// Setup worker and move it to a different thread
 	// The worker exists to call WinRT functions in a different thread
@@ -74,77 +83,141 @@ void MainWindow::setCommentLblText(const QString& text) {
 }
 
 void MainWindow::onMediaInfoExtracted(QString appID, QString title, QString artist) {
-	m_singleShotTimer.setSingleShot(true);
-	connect(&m_singleShotTimer, &QTimer::timeout, this, [this]() { m_flyOut->start(); });
-
-	// Check if something's changed
+	// ingnore the call if nothing's changed
 	std::vector<QString> mediaProperties = {appID, title, artist};
-	if (mediaProperties != m_mediaProperties) {
-		m_mediaProperties = mediaProperties;
+	if (mediaProperties == m_mediaProperties) {
+		return;
+	}
 
-		spdlog::info("New media info:\nTitle: {}\nArtist: {}\nAppID: {}",
-			title.toStdString(), artist.toStdString(), appID.toStdString());
+	m_mediaProperties = mediaProperties;
 
-		// If the window is currently collapsing
-		if (m_flyOut->state() == QAbstractAnimation::Running) {
-			spdlog::debug("Animation state: the window is currently collapsing");
-			// Cancel the previously called collapsing/extending on timer
-			m_singleShotTimer.stop();
+	std::string titleStd = title.toStdString();
+	std::string artistStd = artist.toStdString();
+	std::string appIDStd = appID.toStdString();
 
-			// Expand after finished collapsing
-			m_singleShotTimer.singleShot(m_flyOut->duration()+100, [this]() { m_flyIn->start(); });
+	spdlog::info("New media info:\nTitle: {}\nArtist: {}\nAppID: {}",
+		titleStd, artistStd, appIDStd);
 
-			// Wait 5s and collapse
-			m_singleShotTimer.setInterval(5000);
-			m_singleShotTimer.start();
+	m_trayIcon->setToolTip(QString::fromStdString(std::format("{} - {}", artistStd, titleStd)));
+
+	startAnimations();
+
+	// Display properties in UI
+	m_singleShotTimer.singleShot(50, [this, title, artist, appID]() {
+		setTitleLblText(title);
+		setArtistLblText(artist);
+		setCommentLblText(appID);
+		emit MediaInfoExtracted(appID, title, artist); });
+}
+
+void MainWindow::initializeTrayIcon() {
+	m_trayMenu = new QMenu(this);
+	m_trayMenu->setObjectName("trayMenu");
+	m_editQssAction = m_trayMenu->addAction("Edit QSS", []() {
+		QDesktopServices::openUrl(QUrl::fromLocalFile("stylesheet.qss"));
+		});
+	m_updateQssAction = m_trayMenu->addAction("Update QSS", [this]() {
+		updateStyleSheet();
+		});
+	m_trayMenu->addSeparator();
+	m_quitAction = m_trayMenu->addAction("Quit", qApp, &QApplication::quit);
+	
+	m_trayIcon = new QSystemTrayIcon(this);
+	m_trayIcon->setIcon(QIcon(":/icons/icons/appIcon.png"));
+	m_trayIcon->setContextMenu(m_trayMenu);
+	m_trayIcon->setToolTip("Media Pop-up");
+
+	connect(m_trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+		if (reason == QSystemTrayIcon::ActivationReason::DoubleClick) {
+			startAnimations();
 		}
+		});
 
-		// If the window is fully extended
-		if (this->x() == 1920 - windowWidth) {
-			spdlog::debug("Animation state: the window is fully extended");
-			// Cancel the previously called collapsing/extending on timer
-			m_singleShotTimer.stop();
+	m_trayIcon->show();
+}
 
-			// Collapse
-			m_flyOut->start();
+void MainWindow::updateStyleSheet() {
+	QFile styleFile(QString::fromStdString(qssFilePath));
+	if (styleFile.open(QFile::ReadOnly))
+	{
+		QString styleSheet = QLatin1String(styleFile.readAll());
+		qApp->setStyleSheet(styleSheet);
+		styleFile.close();
+		spdlog::info("Loaded style sheet from .qss file: {}", qssFilePath);
+	}
+	else // if failed to open file
+	{
+		spdlog::warn("Failed to load style sheet from .qss file: '{}'", qssFilePath);
 
-			// Expand after finished collapsing
-			m_singleShotTimer.singleShot(m_flyOut->duration() + 100, [this]() { m_flyIn->start(); });
-
-			// Wait 5s and collapse
-			m_singleShotTimer.setInterval(5000);
-			m_singleShotTimer.start();
+		// load default style sheet if failed
+		QFile styleFile(QString::fromStdString(qssDefaultFilePath));
+		if (styleFile.open(QFile::ReadOnly))
+		{
+			QString styleSheet = QLatin1String(styleFile.readAll());
+			qApp->setStyleSheet(styleSheet);
+			styleFile.close();
+			spdlog::info("Loaded default style sheet from .qss file: {}", qssDefaultFilePath);
 		}
-
-		// If the window is currently expanding
-		if (m_flyIn->state() == QAbstractAnimation::Running) {
-			spdlog::debug("Animation state: the window is currently expanding");
-			// Cancel the previously called collapsing/extending on timer
-			m_singleShotTimer.stop();
-
-			// Wait 5s and collapse
-			m_singleShotTimer.start();
+		else // if failed to open file
+		{
+			spdlog::warn("Failed to load default style sheet from .qss file: '{}'", qssDefaultFilePath);
 		}
+	}
+}
 
-		// If the window is fully collapsed
-		if (this->x() == 1920) {
-			spdlog::debug("Animation state: the window is fully collapsed");
-			// Cancel the previously called collapsing/extending on timer
-			m_singleShotTimer.stop();
+void MainWindow::startAnimations() {
+	// If the window is currently collapsing
+	if (m_flyOut->state() == QAbstractAnimation::Running) {
+		spdlog::debug("Animation state: the window is currently collapsing");
+		// Cancel the previously called collapsing/extending on timer
+		m_singleShotTimer.stop();
 
-			// Expand
-			m_flyIn->start();
-			// Wait 5s and collapse
-			m_singleShotTimer.setInterval(5000);
-			m_singleShotTimer.start();
-		}
+		// Expand after finished collapsing
+		m_singleShotTimer.singleShot(m_flyOut->duration() + 100, [this]() { m_flyIn->start(); });
 
-		// Display properties in UI
-		m_singleShotTimer.singleShot(50, [this, title, artist, appID]() {
-			setTitleLblText(title);
-			setArtistLblText(artist);
-			setCommentLblText(appID);
-			emit MediaInfoExtracted(appID, title, artist); });
+		// Wait 5s and collapse
+		m_singleShotTimer.setInterval(5000);
+		m_singleShotTimer.start();
+	}
+
+	// If the window is fully extended
+	if (this->x() == 1920 - windowWidth) {
+		spdlog::debug("Animation state: the window is fully extended");
+		// Cancel the previously called collapsing/extending on timer
+		m_singleShotTimer.stop();
+
+		// Collapse
+		m_flyOut->start();
+
+		// Expand after finished collapsing
+		m_singleShotTimer.singleShot(m_flyOut->duration() + 100, [this]() { m_flyIn->start(); });
+
+		// Wait 5s and collapse
+		m_singleShotTimer.setInterval(5000);
+		m_singleShotTimer.start();
+	}
+
+	// If the window is currently expanding
+	if (m_flyIn->state() == QAbstractAnimation::Running) {
+		spdlog::debug("Animation state: the window is currently expanding");
+		// Cancel the previously called collapsing/extending on timer
+		m_singleShotTimer.stop();
+
+		// Wait 5s and collapse
+		m_singleShotTimer.start();
+	}
+
+	// If the window is fully collapsed
+	if (this->x() == 1920) {
+		spdlog::debug("Animation state: the window is fully collapsed");
+		// Cancel the previously called collapsing/extending on timer
+		m_singleShotTimer.stop();
+
+		// Expand
+		m_flyIn->start();
+		// Wait 5s and collapse
+		m_singleShotTimer.setInterval(5000);
+		m_singleShotTimer.start();
 	}
 }
 

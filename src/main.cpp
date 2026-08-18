@@ -7,13 +7,6 @@
 #include <QFile>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <string>
-
-// default style sheet - embedded into .exe
-std::string qssDefaultFilePath = ":/styles/defaultStylesheet.qss";
-
-// customizable style sheet - separate file
-std::string qssFilePath = "stylesheet.qss";
 
 int main(int argc, char* argv[])
 {
@@ -30,7 +23,7 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
 
     MainWindow window; // remove window default frame and make it always stay on top
-    window.setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    window.setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
 
     AppController controller(&window);
     
@@ -48,7 +41,7 @@ int main(int argc, char* argv[])
         spdlog::warn("Failed to load style sheet from .qss file: '{}'", qssFilePath);
 
         // load default style sheet if failed
-        QFile styleFile(QString::fromStdString(qssFilePath));
+        QFile styleFile(QString::fromStdString(qssDefaultFilePath));
         if (styleFile.open(QFile::ReadOnly))
         {
             QString styleSheet = QLatin1String(styleFile.readAll());
@@ -61,6 +54,13 @@ int main(int argc, char* argv[])
             spdlog::warn("Failed to load default style sheet from .qss file: '{}'", qssDefaultFilePath);
         }
     }
+
+    app.setWindowIcon(QIcon(":/icons/icons/appIcon.png"));
+    app.setQuitOnLastWindowClosed(false);
+    app.setApplicationName("MediaPopUp");
+    app.setApplicationDisplayName("Media Pop-Up");
+
+    window.setWindowTitle("Media Pop-Up");
 
     window.show();
     return app.exec();

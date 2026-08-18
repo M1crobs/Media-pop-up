@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/styles">
-        <file>defaultStylesheet.qss</file>
+        <file>styles/defaultStylesheet.qss</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>icons/appIcon.png</file>
     </qresource>
 </RCC>
