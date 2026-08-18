@@ -2,10 +2,10 @@
 
 
 
-\[V1.1.0]
+\[V1.2.0]
 
-* You can now edit style sheet of all widgets in *stylesheet.qss* file.
-* Added logging into file *logs/appLog.txt*
+* Moved the app into system tray
+* Several handy tray menu actions for editing style sheet and comment list
 
 
 
